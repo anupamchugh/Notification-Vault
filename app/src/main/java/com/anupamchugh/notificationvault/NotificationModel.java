@@ -1,5 +1,6 @@
 package com.anupamchugh.notificationvault;
 
+import android.app.PendingIntent;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -7,16 +8,16 @@ public class NotificationModel implements Parcelable, Comparable, Cloneable {
 
     public String title, body, packageName, sbnKey;
     public long timeStamp;
-    byte[] notificationIcon;
+    PendingIntent pendingIntent;
+    byte[] serializedPersistentPendingIntent;
 
-
-    public NotificationModel(String title, String body, long timeStamp, byte[] notificationIcon, String sbnKey, String packageName) {
+    public NotificationModel(String title, String body, long timeStamp, String sbnKey, String packageName, PendingIntent pendingIntent) {
         this.title = title;
         this.body = body;
         this.packageName = packageName;
         this.sbnKey = sbnKey;
         this.timeStamp = timeStamp;
-        this.notificationIcon = notificationIcon;
+        this.pendingIntent = pendingIntent;
     }
 
     @Override
@@ -31,7 +32,9 @@ public class NotificationModel implements Parcelable, Comparable, Cloneable {
         dest.writeString(this.packageName);
         dest.writeString(this.sbnKey);
         dest.writeLong(this.timeStamp);
-        dest.writeByteArray(this.notificationIcon);
+        pendingIntent.writeToParcel(dest, i);
+        serializedPersistentPendingIntent = dest.marshall();
+
 
     }
 
@@ -41,7 +44,8 @@ public class NotificationModel implements Parcelable, Comparable, Cloneable {
         this.packageName = in.readString();
         this.sbnKey = in.readString();
         this.timeStamp = in.readLong();
-        this.notificationIcon = in.createByteArray();
+        in.unmarshall(serializedPersistentPendingIntent, 0, serializedPersistentPendingIntent.length);
+        pendingIntent = (PendingIntent) in.readValue(PendingIntent.class.getClassLoader());
     }
 
     public static final Parcelable.Creator<NotificationModel> CREATOR = new Parcelable.Creator<NotificationModel>() {

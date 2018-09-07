@@ -5,14 +5,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,14 +39,18 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     SharedPreferences.OnSharedPreferenceChangeListener listener;
     RecyclerView recyclerView;
     LinearLayout linearLayout;
-    RecyclerViewAdapter recyclerViewAdapter;
+    RecyclerViewAdapter mAdapter;
     ArrayList<NotificationModel> notificationModelArrayList;
+    CoordinatorLayout coordinatorLayout;
+    boolean undoWasClicked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        coordinatorLayout = findViewById(R.id.coordinator_layout);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         button = findViewById(R.id.button);
 
@@ -62,7 +72,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                         notificationModelArrayList = new ArrayList<>();
 
 
-                    recyclerViewAdapter.setData(notificationModelArrayList);
+                    mAdapter.setData(notificationModelArrayList);
+                    recyclerView.scrollToPosition(0);
                     toggleEmptyView();
 
                 }
@@ -87,9 +98,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         //Log.d("API123", "## " + notificationModelArrayList.size());
 
-        recyclerViewAdapter = new RecyclerViewAdapter(notificationModelArrayList, this);
-        recyclerView.setAdapter(recyclerViewAdapter);
+        mAdapter = new RecyclerViewAdapter(notificationModelArrayList, this);
+        recyclerView.setAdapter(mAdapter);
         toggleEmptyView();
+
+
+        swipeToDeleteFeature();
 
 
     }
@@ -151,15 +165,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
 
-        //Log.d("API123", "isMyService running");
-
 
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.d("API123", "isMyService running");
                 return true;
             }
         }
+        Log.d("API123", "isMyService NOT running");
         return false;
     }
 
@@ -186,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Override
     public void onRowClicked(final NotificationModel model) {
 
-        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        /*AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setMessage("Are you sure you want to delete this notification from the guard?");
         builder1.setCancelable(true);
 
@@ -228,13 +242,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         builder1.setNegativeButton("No", null);
 
         AlertDialog alert = builder1.create();
-        alert.show();
+        alert.show();*/
 
 
     }
 
     private void toggleEmptyView() {
-        if (recyclerViewAdapter.getData().isEmpty()) {
+        if (mAdapter.getData().isEmpty()) {
             linearLayout.setVisibility(View.VISIBLE);
         } else {
             linearLayout.setVisibility(View.GONE);
@@ -258,6 +272,64 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             }
         }
 
+    }
+
+    public void swipeToDeleteFeature() {
+
+
+        SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(this) {
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+                final int position = viewHolder.getAdapterPosition();
+                Log.d("API123", "SWIPED..........................................................");
+
+                final ArrayList<NotificationModel> tempList = mAdapter.getData();
+                final NotificationModel notificationModel = tempList.remove(position);
+
+                mAdapter.notifyItemRemoved(position);
+
+
+                Snackbar snackbar = Snackbar
+                        .make(coordinatorLayout, "Notification removed from vault.", Snackbar.LENGTH_LONG);
+                snackbar.setAction("UNDO", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        undoWasClicked = true;
+                        // undo is selected, restore the deleted item
+                        boolean b = mAdapter.restoreItem(notificationModel, position);
+
+                        if (b)
+                            recyclerView.scrollToPosition(position);
+                    }
+                });
+                snackbar.addCallback(new Snackbar.Callback() {
+
+                    @Override
+                    public void onDismissed(Snackbar snackbar, int event) {
+                        if (!undoWasClicked) {
+                            Log.d("API123", "onDismissed");
+                            SharedPreferences.Editor editor = mSharedPreferences.edit();
+                            String string = new Gson().toJson(tempList);
+                            editor.putString(PREFS_NOTIFICATION_LIST, string);
+                            editor.apply();
+                        }
+
+                    }
+
+                    @Override
+                    public void onShown(Snackbar snackbar) {
+
+                    }
+                });
+                snackbar.setActionTextColor(Color.YELLOW);
+                snackbar.show();
+
+            }
+        };
+
+        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
+        itemTouchhelper.attachToRecyclerView(recyclerView);
     }
 
 

@@ -37,7 +37,7 @@ public class CustomService2 extends NotificationListenerService {
         super.onCreate();
 
 
-        //Log.d("API123", "onCreate service");
+        Log.d("API123", "onCreate service");
 
         context = getApplicationContext();
 
@@ -70,7 +70,7 @@ public class CustomService2 extends NotificationListenerService {
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
 
-        //Log.d("API123", "onNotification changed");
+        Log.d("API123", "onNotification changed");
 
         String tempKey = sbn.getKey();
 
@@ -92,17 +92,10 @@ public class CustomService2 extends NotificationListenerService {
 
                 if (title != null && packageName != null && body != null && icon != null) {
 
-                    Drawable drawable = icon.loadDrawable(context);
-
-                    Bitmap bitmap = drawableToBitmap(drawable);
-
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] byteArray = stream.toByteArray();
 
                     Intent intent = new Intent(INTENT_FROM_SERVICE);
 
-                    NotificationModel notificationModel = new NotificationModel(title.toString(), body.toString(), timestamp, byteArray, tempKey, packageName);
+                    NotificationModel notificationModel = new NotificationModel(title.toString(), body.toString(), timestamp, tempKey, packageName);
                     intent.putExtra(NOTIFICATION_MODEL_EXTRA_KEY, notificationModel);
 
 
@@ -113,29 +106,6 @@ public class CustomService2 extends NotificationListenerService {
         }
 
 
-    }
-
-
-    public static Bitmap drawableToBitmap(Drawable drawable) {
-        Bitmap bitmap = null;
-
-        if (drawable instanceof BitmapDrawable) {
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            if (bitmapDrawable.getBitmap() != null) {
-                return bitmapDrawable.getBitmap();
-            }
-        }
-
-        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
-            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
-        } else {
-            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        }
-
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-        return bitmap;
     }
 
 

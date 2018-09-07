@@ -1,7 +1,9 @@
 package com.anupamchugh.notificationvault;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
@@ -67,21 +69,18 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         Context context = holder.imageView.getContext();
 
-        Glide.with(context)
-                .asBitmap()
-                .load(data.get(position).notificationIcon)
-                .listener(new RequestListener<Bitmap>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        return false;
-                    }
 
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        return false;
-                    }
-                })
-                .into(holder.imageView);
+        try {
+
+            Drawable icon = context.getPackageManager().getApplicationIcon(data.get(position).packageName);
+
+            Glide.with(context)
+                    .load(icon)
+                    .into(holder.imageView);
+
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
 
         applyClickEvents(holder, data.get(position));
     }
@@ -121,5 +120,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public interface ClickAdapterListener {
 
         void onRowClicked(NotificationModel model);
+    }
+
+    public boolean restoreItem(NotificationModel item, int position) {
+        data.add(position, item);
+        // notify item added by position
+        notifyItemInserted(position);
+
+        return true;
+
     }
 }
