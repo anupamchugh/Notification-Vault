@@ -95,7 +95,7 @@ public class CustomService2 extends NotificationListenerService {
 
                     Intent intent = new Intent(INTENT_FROM_SERVICE);
 
-                    NotificationModel notificationModel = new NotificationModel(title.toString(), body.toString(), timestamp, tempKey, packageName);
+                    NotificationModel notificationModel = new NotificationModel(title.toString(), body.toString(), timestamp, tempKey, packageName, sbn.getNotification().contentIntent);
                     intent.putExtra(NOTIFICATION_MODEL_EXTRA_KEY, notificationModel);
 
 

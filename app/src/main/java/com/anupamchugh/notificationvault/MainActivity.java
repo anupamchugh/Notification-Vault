@@ -200,6 +200,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Override
     public void onRowClicked(final NotificationModel model) {
 
+
+        Log.d("API123", "model " + model.pendingIntent.getIntentSender() + " " + model.pendingIntent);
+
         /*AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setMessage("Are you sure you want to delete this notification from the guard?");
         builder1.setCancelable(true);

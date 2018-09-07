@@ -32,8 +32,12 @@ public class NotificationModel implements Parcelable, Comparable, Cloneable {
         dest.writeString(this.packageName);
         dest.writeString(this.sbnKey);
         dest.writeLong(this.timeStamp);
-        pendingIntent.writeToParcel(dest, i);
-        serializedPersistentPendingIntent = dest.marshall();
+
+
+
+
+        /*pendingIntent.writeToParcel(dest, 0);
+        serializedPersistentPendingIntent = dest.marshall();*/
 
 
     }
@@ -44,8 +48,11 @@ public class NotificationModel implements Parcelable, Comparable, Cloneable {
         this.packageName = in.readString();
         this.sbnKey = in.readString();
         this.timeStamp = in.readLong();
-        in.unmarshall(serializedPersistentPendingIntent, 0, serializedPersistentPendingIntent.length);
-        pendingIntent = (PendingIntent) in.readValue(PendingIntent.class.getClassLoader());
+
+
+
+        /*in.unmarshall(serializedPersistentPendingIntent, 0, serializedPersistentPendingIntent.length);
+        pendingIntent = (PendingIntent) in.readValue(PendingIntent.class.getClassLoader());*/
     }
 
     public static final Parcelable.Creator<NotificationModel> CREATOR = new Parcelable.Creator<NotificationModel>() {
