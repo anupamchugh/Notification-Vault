@@ -1,11 +1,12 @@
 package com.anupamchugh.notificationvault;
 
 import android.app.ActivityManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -30,7 +31,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-import static com.anupamchugh.notificationvault.CustomBroadcastReceiver.PREFS_NOTIFICATION_LIST;
+import static com.anupamchugh.notificationvault.CustomBroadcastReceiver2.PREFS_NOTIFICATION_LIST;
 
 public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ClickAdapterListener {
 
@@ -201,7 +202,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     public void onRowClicked(final NotificationModel model) {
 
 
-        Log.d("API123", "model " + model.pendingIntent.getIntentSender() + " " + model.pendingIntent);
+        boolean applicationIntentAvailable = openApplication(this, model.packageName);
+
+
+        if (!applicationIntentAvailable) {
+            Snackbar snackbar = Snackbar
+                    .make(coordinatorLayout, "This application does not allow launch.", Snackbar.LENGTH_LONG);
+            snackbar.show();
+        }
 
         /*AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setMessage("Are you sure you want to delete this notification from the guard?");
@@ -247,7 +255,22 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         AlertDialog alert = builder1.create();
         alert.show();*/
 
+    }
 
+    private boolean openApplication(Context context, String packageName) {
+        PackageManager packageManager = context.getPackageManager();
+
+        try {
+            Intent intent = packageManager.getLaunchIntentForPackage(packageName);
+            if (intent == null)
+                return false;
+
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            context.startActivity(intent);
+            return true;
+        } catch (ActivityNotFoundException e) {
+            return true;
+        }
     }
 
     private void toggleEmptyView() {

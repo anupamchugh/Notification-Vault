@@ -15,15 +15,13 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-public class CustomBroadcastReceiver extends BroadcastReceiver {
+public class CustomBroadcastReceiver2 extends BroadcastReceiver {
 
 
     public static final String PREFS_NOTIFICATION_LIST = "prefs_notification_list";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
-        Log.d("API123", "onReceive");
 
         if (intent != null) {
 
@@ -32,9 +30,6 @@ public class CustomBroadcastReceiver extends BroadcastReceiver {
                 String action = intent.getAction();
 
                 if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-
-                    Log.d("API123","onBOoot completeed");
-
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
                         context.startForegroundService(new Intent(context, CustomService2.class));

@@ -31,7 +31,7 @@
         </service>
 
         <receiver
-            android:name=".CustomBroadcastReceiver"
+            android:name=".CustomBroadcastReceiver2"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
